@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f4f7; /* Light background for the whole page */
+        }
+        .container {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .active {
+            display: block;
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        input[type="text"], input[type="password"], select, input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background-color: #fafafa; /* Light grey background for inputs */
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+        .image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            padding: 5px;
+            cursor: pointer;
+        }
+        .upload-btn {
+            background-color: #2196F3; /* Blue for upload button */
+        }
+        /* Additional background colors for different sections */
+        #loginPage {
+            background-color: #f5f5f5; /* Light grey background for login page */
+        }
+        #settingsPage {
+            background-color: #e8f5e9; /* Light green background for settings page */
+        }
+        #filtersPage {
+            background-color: #f3e5f5; /* Light purple background for filters page */
+        }
+        #uploadPage {
+            background-color: #fff3e0; /* Light orange background for upload page */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Page -->
+    <div class="container active" id="loginPage">
+        <h2>Login to Photography App</h2>
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="container" id="settingsPage">
+        <h2>Settings</h2>
+        <div>
+            <label for="darkMode">Dark Mode</label>
+            <input type="checkbox" id="darkMode">
+        </div>
+        <div>
+            <label for="notifications">Enable Notifications</label>
+            <input type="checkbox" id="notifications">
+        </div>
+        <button onclick="saveSettings()">Save Settings</button>
+        <button onclick="goBack()">Back to Home</button>
+    </div>
+
+    <!-- Filters Page -->
+    <div class="container" id="filtersPage">
+        <h2>Apply Filters</h2>
+        <label for="filterSelect">Choose a Filter:</label>
+        <select id="filterSelect">
+            <option value="sepia">Sepia</option>
+            <option value="blackAndWhite">Black & White</option>
+            <option value="vintage">Vintage</option>
+            <option value="saturate">Saturate</option>
+        </select>
+        <button onclick="applyFilter()">Apply Filter</button>
+        <button onclick="goBack()">Back to Home</button>
+    </div>
+
+    <!-- Upload Page -->
+    <div class="container" id="uploadPage">
+        <h2>Upload Photos</h2>
+        <input type="file" id="photoUpload" accept="image/*" multiple onchange="previewImages(event)">
+        <div id="imagePreviewContainer" class="image-preview-container"></div>
+        <button class="upload-btn" onclick="uploadPhotos()">Upload</button>
+        <button onclick="goBack()">Back to Home</button>
+    </div>
+
+    <script>
+        let uploadedImages = [];
+
+        // Login function
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            // Basic validation for username and password
+            if (username && password) {
+                alert("Login Successful!");
+                showPage("settingsPage"); // After login, go to settings page
+            } else {
+                alert("Please enter both username and password.");
+            }
+        }
+
+        // Function to save settings (you can add more functionality here)
+        function saveSettings() {
+            alert("Settings Saved!");
+            showPage("filtersPage"); // After settings, go to filters page
+        }
+
+        // Function to apply filters
+        function applyFilter() {
+            let selectedFilter = document.getElementById("filterSelect").value;
+            alert("Applying " + selectedFilter + " filter!");
+            showPage("uploadPage"); // After filter, go to upload page
+        }
+
+        // Upload photos function
+        function uploadPhotos() {
+            if (uploadedImages.length > 0) {
+                alert("Photos uploaded successfully!");
+                clearUploadedImages();
+            } else {
+                alert("Please select at least one photo to upload.");
+            }
+        }
+
+        // Preview selected images
+        function previewImages(event) {
+            const files = event.target.files;
+            const previewContainer = document.getElementById("imagePreviewContainer");
+
+            // Clear previous previews
+            previewContainer.innerHTML = "";
+
+            // Create image previews
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageContainer = document.createElement("div");
+                    imageContainer.classList.add("image-container");
+
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.classList.add("image-preview");
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.classList.add("delete-btn");
+                    deleteButton.innerText = "X";
+                    deleteButton.onclick = () => deleteImagePreview(img.src);
+
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(deleteButton);
+
+                    previewContainer.appendChild(imageContainer);
+
+                    uploadedImages.push(img.src);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Delete image preview
+        function deleteImagePreview(imageSrc) {
+            uploadedImages = uploadedImages.filter(src => src !== imageSrc);
+            const imageContainers = document.querySelectorAll(".image-container");
+            imageContainers.forEach(container => {
+                const img = container.querySelector("img");
+                if (img.src === imageSrc) {
+                    container.remove();
+                }
+            });
+        }
+
+        // Clear uploaded images after upload
+        function clearUploadedImages() {
+            uploadedImages = [];
+            document.getElementById("imagePreviewContainer").innerHTML = "";
+            document.getElementById("photoUpload").value = ""; // Reset file input
+        }
+
+        // Go back to a specific page
+        function goBack() {
+            showPage("loginPage"); // Go back to the login page
+        }
+
+        // Show the page with the given id
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.container');
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        // Ensure the script runs after the DOM is fully loaded
+        window.onload = function() {
+            showPage("loginPage"); // Start with login page
+        }
+    </script>
+
+</body>
+</html>
+
